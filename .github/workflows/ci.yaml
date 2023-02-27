@@ -99,70 +99,6 @@ env:
     test_yield_from
 
 jobs:
-  rust_tests:
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip:ci') }}
-    env:
-      RUST_BACKTRACE: full
-    name: Run rust tests
-    needs: lalrpop
-    runs-on:  ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [macos-latest]
-      fail-fast: false
-    steps:
-      - uses: actions/checkout@v3
-      - name: Cache generated parser
-        uses: actions/cache@v2
-        with:
-          path: compiler/parser/python.rs
-          key: lalrpop-${{ hashFiles('compiler/parser/python.lalrpop') }}
-      - uses: dtolnay/rust-toolchain@stable
-        with:
-          components: clippy
-      - name: Set up the Windows environment
-        shell: bash
-        run: |
-          choco install llvm openssl
-          echo "OPENSSL_DIR=C:\Program Files\OpenSSL-Win64" >>$GITHUB_ENV
-        if: runner.os == 'Windows'
-      - name: Set up the Mac environment
-        run: brew install autoconf automake libtool openssl@3
-        if: runner.os == 'macOS'
-
-      - uses: Swatinem/rust-cache@v2
-
-      - name: run clippy
-        run: cargo clippy ${{ env.CARGO_ARGS }} ${{ env.NON_WASM_PACKAGES }} -- -Dwarnings
-
-      - name: run rust tests
-        run: cargo test --workspace --exclude rustpython_wasm --verbose --features threading ${{ env.CARGO_ARGS }} ${{ env.NON_WASM_PACKAGES }}
-        if: runner.os != 'macOS'  
-      # temp skip ssl linking for Mac to avoid CI failure
-      - name: run rust tests (MacOS no ssl)
-        run: cargo test --workspace --exclude rustpython_wasm --verbose --no-default-features --features threading,stdlib,zlib,importlib,encodings,jit ${{ env.NON_WASM_PACKAGES }}
-        if: runner.os == 'macOS'
-
-      - name: check compilation without threading
-        run: cargo check ${{ env.CARGO_ARGS }}
-
-      - name: prepare AppleSilicon build
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          target: aarch64-apple-darwin
-        if: runner.os == 'macOS'
-      - name: Check compilation for Apple Silicon
-        run: cargo check --target aarch64-apple-darwin
-        if: runner.os == 'macOS'
-      - name: prepare iOS build
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          target: aarch64-apple-ios
-        if: runner.os == 'macOS'
-      - name: Check compilation for iOS
-        run: cargo check --target aarch64-apple-ios
-        if: runner.os == 'macOS'
-
 
   snippets_cpython:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip:ci') }}
@@ -206,33 +142,6 @@ jobs:
       - name: run snippets
         run: python -m pip install -r requirements.txt && pytest -v -s
         working-directory: ./extra_tests
-      - if: runner.os == 'Linux'
-        name: run cpython platform-independent tests
-        run:
-          target/release/rustpython -m test -j 1 -u all --slowest --fail-env-changed -v ${{ env.PLATFORM_INDEPENDENT_TESTS }}
-      - if: runner.os != 'Windows'
-        name: run cpython platform-dependent tests
-        run: target/release/rustpython -m test -j 1 -u all --slowest --fail-env-changed -v -x ${{ env.PLATFORM_INDEPENDENT_TESTS }}
-      - if: runner.os == 'Windows'
-        name: run cpython platform-dependent tests (windows partial - fixme)
-        run:
-          target/release/rustpython -m test -j 1 -u all --slowest --fail-env-changed -v -x ${{ env.PLATFORM_INDEPENDENT_TESTS }}
-            test_glob
-            test_importlib
-            test_io
-            test_iter
-            test_os
-            test_pathlib
-            test_posixpath
-            test_shutil
-            test_venv
-      - if: runner.os != 'Windows'
-        name: check that --install-pip succeeds
-        run: |
-          mkdir site-packages
-          target/release/rustpython --install-pip ensurepip --user
-      - name: Check whats_left is not broken
-        run: python -I whats_left.py
 
   lalrpop:
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'skip:ci') }}

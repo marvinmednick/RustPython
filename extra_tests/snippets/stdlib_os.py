@@ -2,6 +2,7 @@ import os
 import time
 import stat
 import sys
+import logging
 
 from testutils import assert_raises
 
@@ -509,12 +510,15 @@ if "win" not in sys.platform:
         assert_raises(TypeError, os.system, arg)
 
 # Testing for os.pathconf_names
-#if sys.platform.startswith('linux'):
-if "win" not in sys.platform:
+if not sys.platform.startswith('win'):
     assert len(os.pathconf_names) > 0
     assert 'PC_NAME_MAX' in os.pathconf_names
     for option,index in os.pathconf_names.items():
         print(f"Option {option} Index {index}")
+        logging.warn(f"WARN Option {option} Index {index}")
+        logging.info(f"INFO Option {option} Index {index}")
         o = os.pathconf('/', option)
+        print(f"Option Result {o}")
         i = os.pathconf('/', index)
+        print(f"Index Result {i}")
         assert os.pathconf('/', index) == os.pathconf('/', option)
