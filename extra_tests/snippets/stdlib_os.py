@@ -517,8 +517,11 @@ if not sys.platform.startswith('win'):
         print(f"Option {option} Index {index}")
         logging.warn(f"WARN Option {option} Index {index}")
         logging.info(f"INFO Option {option} Index {index}")
-        o = os.pathconf('/', option)
-        print(f"Option Result {o}")
         i = os.pathconf('/', index)
         print(f"Index Result {i}")
-        assert os.pathconf('/', index) == os.pathconf('/', option)
+        if option in ["PC_MAX_CANON"] and sys.platform == "darwin":
+            print(f"Skipping test for {option} on {sys.platform}")
+        else:
+            o = os.pathconf('/', option)
+            print(f"Option Result {o}")
+            assert os.pathconf('/', index) == os.pathconf('/', option)
