@@ -514,14 +514,13 @@ if not sys.platform.startswith('win'):
     assert len(os.pathconf_names) > 0
     assert 'PC_NAME_MAX' in os.pathconf_names
     for option,index in os.pathconf_names.items():
-        print(f"Option {option} Index {index}")
+        print(f"Option {option} Index {index} sys.platform {sys.platform}")
         logging.warn(f"WARN Option {option} Index {index}")
-        logging.info(f"INFO Option {option} Index {index}")
-        i = os.pathconf('/', index)
-        print(f"Index Result {i}")
         if option in ["PC_MAX_CANON"] and sys.platform == "darwin":
             print(f"Skipping test for {option} on {sys.platform}")
         else:
             o = os.pathconf('/', option)
             print(f"Option Result {o}")
+            i = os.pathconf('/', index)
+            print(f"Index Result {i}")
             assert os.pathconf('/', index) == os.pathconf('/', option)
