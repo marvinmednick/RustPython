@@ -1,6 +1,6 @@
 on:
   push:
-    branches: [main, release]
+    branches: [main, release, test1]
   pull_request:
     types: [labeled, unlabeled, opened, synchronize, reopened]
 
