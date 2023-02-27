@@ -509,7 +509,8 @@ if "win" not in sys.platform:
         assert_raises(TypeError, os.system, arg)
 
 # Testing for os.pathconf_names
-if sys.platform.startswith('linux'):
+#if sys.platform.startswith('linux'):
+if "win" not in sys.platform:
     assert len(os.pathconf_names) > 0
     assert 'PC_NAME_MAX' in os.pathconf_names
     for option,index in os.pathconf_names.items():
