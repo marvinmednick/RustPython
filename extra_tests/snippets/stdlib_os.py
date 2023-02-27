@@ -514,7 +514,7 @@ if "win" not in sys.platform:
     assert len(os.pathconf_names) > 0
     assert 'PC_NAME_MAX' in os.pathconf_names
     for option,index in os.pathconf_names.items():
-        print(f"Option {option} Index {index}"
+        print(f"Option {option} Index {index}")
         o = pathconf('/', option);
         i = pathconf('/', ind);
         assert os.pathconf('/', index) == os.pathconf('/', option)
